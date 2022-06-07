@@ -17,16 +17,16 @@ const DATABASE_URL = process.env.DATABASE_URL
 const CONFIG = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  };
+};
 
 // Establish Connection to DataBase
 mongoose.connect(DATABASE_URL, CONFIG)
 
 // Events for when connection opens/disconnects/errors
 mongoose.connection
-.on("open", () => console.log("Connected to Mongoose"))
-.on("close", () => console.log("Disconnected from Mongoose"))
-.on("error", (error) => console.log(error));
+    .on("open", () => console.log("Connected to Mongoose"))
+    .on("close", () => console.log("Disconnected from Mongoose"))
+    .on("error", (error) => console.log(error));
 
 ////////////////////////////////////////////////
 // Our Models
@@ -44,14 +44,12 @@ const fruitsSchema = new Schema({
     readyToEat: Boolean
 })
 
-// Make fruit model
-const Fruit = model("Fruit", fruitsSchema)
-
+const Fruit = model("Fruit", fruitsSchema) // Make fruit model
 
 /////////////////////////////////////////////////
 // Create our Express Application Object Bind Liquid Templating Engine
 /////////////////////////////////////////////////
-const app = require("liquid-express-views")(express(), {root: [path.resolve(__dirname, 'views/')]})
+const app = require("liquid-express-views")(express(), { root: [path.resolve(__dirname, 'views/')] })
 
 /////////////////////////////////////////////////////
 // Middleware
@@ -66,7 +64,7 @@ app.use(express.static("public")); // serve files from public statically
 ////////////////////////////////////////////
 app.get("/", (req, res) => {
     res.send("your server is running... better catch it.");
-  });
+});
 
 // NOTE: This route (Seed route) is used to empty your database and set it back to it's starting values. (FOR TESTING)
 app.get("/fruits/seed", (req, res) => {
@@ -92,8 +90,47 @@ app.get("/fruits/seed", (req, res) => {
 // index route
 app.get("/fruits", async (req, res) => {
     const fruits = await Fruit.find({})
-    res.render("index", {fruits})
+    res.render("fruits/index", { fruits })
 })
+
+// create route
+app.post("/fruits", (req, res) => {
+    // check if the readyToEat property should be true or false
+    req.body.readyToEat = req.body.readyToEat === "on" ? true : false;
+    // create the new fruit
+    Fruit.create(req.body)
+      .then((fruits) => {
+        // redirect user to index page if successfully created item
+        res.redirect("/fruits");
+      })
+      // send error as json
+      .catch((error) => {
+        console.log(error);
+        res.json({ error });
+      });
+  });
+
+// new route
+app.get("/fruits/new", (req, res) => {
+    res.render("fruits/new")
+})
+
+// show route
+app.get("/fruits/:id", (req, res) => {
+    // get the id from params
+    const id = req.params.id;
+
+    // find the particular fruit from the database
+    Fruit.findById(id)
+        .then((fruit) => {
+            // render the template with the data from the database
+            res.render("fruits/show.liquid", { fruit });
+        })
+        .catch((error) => {
+            console.log(error);
+            res.json({ error });
+        });
+});
 
 //////////////////////////////////////////////
 // Server Listener

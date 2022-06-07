@@ -1,0 +1,27 @@
+{% layout "layout.liquid" %}
+{% block title %}
+All Fruits
+{% endblock %}
+{% block headerh1 %}The Fruits App{% endblock %}
+{% block content %}
+<div>
+  {% for fruit in fruits %}
+  <article>
+    <a href="/fruits/{{ fruit._id }}">
+      <h2>
+        {{fruit.name}} - 
+        {% if fruit.readyToEat == true %} 
+            Ripe 
+        {% else %} 
+            Not
+            Ripe 
+        {% endif %}
+      </h2>
+    </a>
+  </article>
+  {% endfor %}
+  <form action="/fruits/new{{ fruit._id }}" method="GET">
+    <input type="submit" value="Create New Fruit" />
+  </form>
+</div>
+{% endblock %}
