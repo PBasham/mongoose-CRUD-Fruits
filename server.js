@@ -32,10 +32,9 @@ mongoose.connection
 // Our Models
 ////////////////////////////////////////////////
 // pull schema and model from mongoose
-
 // const Schema = mongoose.Schema
 // const model = mongoose.model
-// this is the same as creating the variables above, this is using destructuring. It's a shorthand method that will create two variables at once and pull them from mongoose.
+// NOTE: This is the same as creating the variables above, this is using destructuring. It's a shorthand method that will create two variables at once and pull them from mongoose.
 const { Schema, model } = mongoose
 
 // make fruits schema
@@ -65,7 +64,10 @@ app.use(express.static("public")); // serve files from public statically
 ////////////////////////////////////////////
 // Routes
 ////////////////////////////////////////////
-
+app.get("/", (req, res) => {
+    res.send("your server is running... better catch it.");
+  });
+  
 //////////////////////////////////////////////
 // Server Listener
 //////////////////////////////////////////////
