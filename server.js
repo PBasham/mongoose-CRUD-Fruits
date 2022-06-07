@@ -61,3 +61,15 @@ app.use(morgan("tiny")); //logging
 app.use(methodOverride("_method")); // override for put and delete requests from forms
 app.use(express.urlencoded({ extended: true })); // parse urlencoded request bodies
 app.use(express.static("public")); // serve files from public statically
+
+////////////////////////////////////////////
+// Routes
+////////////////////////////////////////////
+
+//////////////////////////////////////////////
+// Server Listener
+//////////////////////////////////////////////
+const PORT = process.env.PORT
+app.listen(PORT, () => {
+    console.log(`Listening on port: ${PORT}`)
+})
