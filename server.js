@@ -5,14 +5,15 @@ require("dotenv").config()
 const express = require("express")
 const morgan = require("morgan") // logger
 const methodOverride = require("method-override")
+const path = require("path")
 const req = require("express/lib/request")
 const Fruit = require("./models/fruit.js")
-
+const FruitRouter = require("./controllers/fruits.js")
 
 /////////////////////////////////////////////////
 // Create our Express Application Object Bind Liquid Templating Engine
 /////////////////////////////////////////////////
-const app = require("liquid-express-views")(express())
+const app = require("liquid-express-views")(express(), {root: [path.resolve(__dirname, 'views/')]})
 
 /////////////////////////////////////////////////////
 // Middleware
@@ -25,128 +26,11 @@ app.use(express.static("public")); // serve files from public statically
 ////////////////////////////////////////////
 // Routes
 ////////////////////////////////////////////
+app.use("/fruits", FruitRouter)
+
 app.get("/", (req, res) => {
     res.send("your server is running... better catch it.");
 });
-
-// NOTE: This route (Seed route) is used to empty your database and set it back to it's starting values. (FOR TESTING)
-app.get("/fruits/seed", (req, res) => {
-    // array of starter fruits
-    const startFruits = [
-        { name: "Orange", color: "orange", readyToEat: false },
-        { name: "Grape", color: "purple", readyToEat: false },
-        { name: "Banana", color: "orange", readyToEat: false },
-        { name: "Strawberry", color: "red", readyToEat: false },
-        { name: "Coconut", color: "brown", readyToEat: false },
-    ];
-
-    // Delete all fruits
-    Fruit.deleteMany({}).then((data) => {
-        // Seed Starter Fruits
-        Fruit.create(startFruits).then((data) => {
-            // send created fruits as response to confirm creation
-            res.json(data);
-        });
-    });
-});
-
-// index route
-app.get("/fruits", async (req, res) => {
-    const fruits = await Fruit.find({})
-    res.render("fruits/index", { fruits })
-})
-
-// create route
-app.post("/fruits", (req, res) => {
-    // check if the readyToEat property should be true or false
-    req.body.readyToEat = req.body.readyToEat === "on" ? true : false;
-    // create the new fruit
-    Fruit.create(req.body)
-      .then((fruits) => {
-        // redirect user to index page if successfully created item
-        res.redirect("/fruits");
-      })
-      // send error as json
-      .catch((error) => {
-        console.log(error);
-        res.json({ error });
-      });
-  });
-
-// new route
-app.get("/fruits/new", (req, res) => {
-    res.render("fruits/new")
-})
-
-// show route
-app.get("/fruits/:id", (req, res) => {
-    // get the id from params
-    const id = req.params.id;
-
-    // find the particular fruit from the database
-    Fruit.findById(id)
-        .then((fruit) => {
-            // render the template with the data from the database
-            res.render("fruits/show.liquid", { fruit });
-        })
-        .catch((error) => {
-            console.log(error);
-            res.json({ error });
-        });
-});
-
-//update route
-app.put("/fruits/:id", (req, res) => {
-    // get the id from params
-    const id = req.params.id;
-    // check if the readyToEat property should be true or false
-    req.body.readyToEat = req.body.readyToEat === "on" ? true : false;
-    // update the fruit
-    Fruit.findByIdAndUpdate(id, req.body, { new: true })
-      .then((fruit) => {
-        // redirect to main page after updating
-        res.redirect("/fruits");
-      })
-      // send error as json
-      .catch((error) => {
-        console.log(error);
-        res.json({ error });
-      });
-  });
-  
-// delete route
-  app.delete("/fruits/:id", (req, res) => {
-    // get the id from params
-    const id = req.params.id;
-    // delete the fruit
-    Fruit.findByIdAndRemove(id)
-      .then((fruit) => {
-        // redirect to main page after deleting
-        res.redirect("/fruits");
-      })
-      // send error as json
-      .catch((error) => {
-        console.log(error);
-        res.json({ error });
-      });
-  });
-  
-// edit route
-app.get("/fruits/:id/edit", (req, res) => {
-    // get the id from params
-    const id = req.params.id;
-    // get the fruit from the database
-    Fruit.findById(id)
-      .then((fruit) => {
-        // render edit page and send fruit data
-        res.render("fruits/edit.liquid", { fruit });
-      })
-      // send error as json
-      .catch((error) => {
-        console.log(error);
-        res.json({ error });
-      });
-  });
 
 //////////////////////////////////////////////
 // Server Listener
